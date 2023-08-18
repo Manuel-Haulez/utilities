@@ -1,28 +1,46 @@
+/**
+ * @file linked_list.c
+ * @author Manuel Haulez
+ * @brief Generic doubly linked list implementation
+ * @version 0.1 2023-08-10 Initial version
+ * @version 0.2 2023-08-18 Fixed prev pointer in ListAddAfterFunction
+ * @date 2023-08-18
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "linked_list.h"
 
 typedef struct node Node;
 struct node
 {
-    void *data;
-    Node *previous;
-    Node *next;
+    void* data;
+    Node* prev;
+    Node* next;
 };
 
 struct list
 {
-    Node *head;
-    Node *lastAccessed;
+    Node* head;
+    Node* lastAccessed;
     int dataSize;
 };
 
-List *ListConstruct(int dataSize)
+/**
+ * @brief Constructs a new linked list instance with the specified data size.
+ *
+ * @param The dataSize of the data elements to be stored in the list.
+ * @return List pointer to the newly constructed linked list, or NULL on failure.
+ */
+List* ListConstruct(int dataSize)
 {
     if (dataSize <= 0)
     {
         return NULL;
     }
 
-    List *newList = malloc(dataSize);
+    List* newList = malloc(dataSize);
 
     if (newList == NULL)
     {
@@ -36,7 +54,13 @@ List *ListConstruct(int dataSize)
     return newList;
 }
 
-int ListDestruct(List **thisPtr)
+/**
+ * @brief Destructs a linked list instance and frees all associated memory.
+ *
+ * @param Pointer to a list pointer to the linked list to be destructed.
+ * @return Error code indicating the success of the destruction operation.
+ */
+int ListDestruct(List** thisPtr)
 {
     if (*thisPtr == NULL || thisPtr == NULL)
     {
@@ -56,7 +80,13 @@ int ListDestruct(List **thisPtr)
     return 0;
 }
 
-void *ListGetHeadData(List *this)
+/**
+ * @brief Retrieves the head data of the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @return Void pointer to the data in the head node, or NULL if the list is empty.
+ */
+void* ListGetHeadData(List* this)
 {
     if (this == NULL || this->head == NULL)
     {
@@ -68,14 +98,20 @@ void *ListGetHeadData(List *this)
     return this->head->data;
 }
 
-void *ListGetTailData(List *this)
+/**
+ * @brief Retrieves the data stored in the tail node of the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @return Void pointer to the data in the tail node, or NULL if the list is empty.
+ */
+void* ListGetTailData(List* this)
 {
     if (this == NULL || this->head == NULL)
     {
         return NULL;
     }
 
-    Node *currentNode = this->head;
+    Node* currentNode = this->head;
 
     while (currentNode->next != NULL)
     {
@@ -87,18 +123,18 @@ void *ListGetTailData(List *this)
     return currentNode->data;
 }
 
-void *ListGetNextData(List *this)
+/**
+ * @brief Retrieves the data stored in the next node of the last accessed node.
+ *
+ * @param List pointer to the linked list.
+ * @return Void pointer to the data in the next node, or NULL if there is no next node.
+ */
+void* ListGetNextData(List* this)
 {
-    if (this == NULL || this->head == NULL)
+    if (this == NULL || this->head == NULL || this->lastAccessed == NULL)
     {
         return NULL;
     }
-
-    if (this->lastAccessed == NULL)
-    {
-        return NULL;
-    }
-
 
     this->lastAccessed = this->lastAccessed->next;
 
@@ -110,20 +146,20 @@ void *ListGetNextData(List *this)
     return this->lastAccessed->data;
 }
 
-void *ListGetPreviousData(List *this)
+/**
+ * @brief Retrieves the data stored in the previous node of the last accessed node.
+ *
+ * @param List pointer to the linked list.
+ * @return Void pointer to the data in the previous node, or NULL if there is no previous node.
+ */
+void* ListGetPreviousData(List* this)
 {
-    if (this == NULL || this->head == NULL)
+    if (this == NULL || this->head == NULL || this->lastAccessed == NULL)
     {
         return NULL;
     }
 
-    if (this->lastAccessed == NULL)
-    {
-        this->lastAccessed = this->head;
-        return this->head->data;
-    }
-
-    this->lastAccessed = this->lastAccessed->previous;
+    this->lastAccessed = this->lastAccessed->prev;
 
     if (this->lastAccessed == NULL)
     {
@@ -133,14 +169,21 @@ void *ListGetPreviousData(List *this)
     return this->lastAccessed->data;
 }
 
-int ListAddHead(List *this, void *data)
+/**
+ * @brief Adds a new node with the provided data to the beginning of the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @param Void pointer to the data to be added.
+ * @return Error code indicating the success of the operation.
+ */
+int ListAddHead(List* this, void* data)
 {
     if (this == NULL || data == NULL)
     {
         return -1;
     }
 
-    Node *newNode = malloc(sizeof(Node));
+    Node* newNode = malloc(sizeof(Node));
     newNode->data = malloc(this->dataSize);
 
     if (newNode == NULL || newNode->data == NULL)
@@ -149,27 +192,33 @@ int ListAddHead(List *this, void *data)
     }
 
     memcpy(newNode->data, data, this->dataSize);
-    newNode->previous = NULL;
+    newNode->prev = NULL;
     newNode->next = this->head;
-
     this->head = newNode;
 
     if (newNode->next != NULL)
     {
-        newNode->next->previous = newNode;
+        newNode->next->prev = newNode;
     }
 
     return 0;
 }
 
-int ListAddTail(List *this, void *data)
+/**
+ * @brief Adds a new node with the provided data to the end of the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @param Void pointer to the data to be added.
+ * @return Error code indicating the success of the operation.
+ */
+int ListAddTail(List* this, void* data)
 {
     if (this == NULL || data == NULL)
     {
         return -1;
     }
 
-    Node *newNode = malloc(sizeof(Node));
+    Node* newNode = malloc(sizeof(Node));
     newNode->data = malloc(this->dataSize);
 
     if (newNode == NULL || newNode->data == NULL)
@@ -178,10 +227,10 @@ int ListAddTail(List *this, void *data)
     }
 
     memcpy(newNode->data, data, this->dataSize);
-    newNode->previous = NULL;
+    newNode->prev = NULL;
     newNode->next = NULL;
 
-    Node *currentNode = this->head;
+    Node* currentNode = this->head;
     if (currentNode == NULL)
     {
         this->head = newNode;
@@ -194,20 +243,28 @@ int ListAddTail(List *this, void *data)
     }
 
     currentNode->next = newNode;
-    newNode->previous = currentNode;
+    newNode->prev = currentNode;
 
     return 0;
 }
 
-int ListAddBefore(List *this, void *data, void *refData)
+/**
+ * @brief Adds a new node with the provided data before the node containing the reference data.
+ *
+ * @param List pointer to the linked list.
+ * @param Void pointer to the data to be added.
+ * @param Void pointer to the reference data.
+ * @return Error code indicating the success of the operation.
+ */
+int ListAddBefore(List* this, void* data, void* refData)
 {
     if (this == NULL || this->head == NULL || data == NULL || refData == NULL)
     {
         return -1;
     }
 
-    Node *currentNode = this->head;
-    Node *previousNode = NULL;
+    Node* currentNode = this->head;
+    Node* previousNode = NULL;
 
     while (currentNode->next != NULL && memcmp(currentNode->data, refData, this->dataSize) != 0)
     {
@@ -220,7 +277,7 @@ int ListAddBefore(List *this, void *data, void *refData)
         return -1;
     }
 
-    Node *newNode = malloc(sizeof(Node));
+    Node* newNode = malloc(sizeof(Node));
     newNode->data = malloc(this->dataSize);
 
     if (newNode == NULL || newNode->data == NULL)
@@ -229,7 +286,7 @@ int ListAddBefore(List *this, void *data, void *refData)
     }
 
     memcpy(newNode->data, data, this->dataSize);
-    newNode->previous = NULL;
+    newNode->prev = NULL;
 
     newNode->next = currentNode;
     if (previousNode == NULL)
@@ -239,21 +296,29 @@ int ListAddBefore(List *this, void *data, void *refData)
     }
 
     previousNode->next = newNode;
-    newNode->previous = previousNode;
-    currentNode->previous = newNode;
+    newNode->prev = previousNode;
+    currentNode->prev = newNode;
     
     return 0;
 }
 
-int ListAddAfter(List *this, void *data, void *refData)
+/**
+ * @brief Adds a new node with the provided data after the node containing the reference data.
+ *
+ * @param List pointer to the linked list.
+ * @param Void pointer to the data to be added.
+ * @param Void pointer to the reference data.
+ * @return Error code indicating the success of the operation.
+ */
+int ListAddAfter(List* this, void* data, void* refData)
 {
     if (this == NULL || this->head == NULL || data == NULL || refData == NULL)
     {
         return -1;
     }
 
-    Node *currentNode = this->head;
-    Node *previousNode = currentNode;
+    Node* currentNode = this->head;
+    Node* previousNode = currentNode;
 
     while (currentNode != NULL && memcmp(previousNode->data, refData, this->dataSize) != 0)
     {
@@ -266,8 +331,8 @@ int ListAddAfter(List *this, void *data, void *refData)
         return -1;
     }
 
-    Node *copyNode = NULL;
-    Node *newNode = malloc(sizeof(Node));
+    Node* copyNode = NULL;
+    Node* newNode = malloc(sizeof(Node));
     newNode->data = malloc(this->dataSize);
 
     if (newNode == NULL || newNode->data == NULL)
@@ -280,24 +345,31 @@ int ListAddAfter(List *this, void *data, void *refData)
     copyNode = previousNode->next;
     previousNode->next = newNode;
     newNode->next = copyNode;
+    newNode->prev = previousNode;
 
     if (copyNode != NULL)
     {
-        copyNode->previous = newNode;
+        copyNode->prev = newNode;
     }
 
     return 0;
 }
 
-int ListRemoveHead(List *this)
+/**
+ * @brief Removes the head node from the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @return Error code indicating the success of the operation.
+ */
+int ListRemoveHead(List* this)
 {
     if (this == NULL || this->head == NULL)
     {
         return -1;
     }
 
-    Node *currentNode = this->head;
-    Node *temp = currentNode->next;
+    Node* currentNode = this->head;
+    Node* temp = currentNode->next;
 
     free(currentNode->data);
     free(currentNode);
@@ -306,21 +378,27 @@ int ListRemoveHead(List *this)
 
     if (temp != NULL)
     {
-        temp->previous = NULL;
+        temp->prev = NULL;
     }
 
     return 0;
 }
 
-int ListRemoveTail(List *this)
+/**
+ * @brief Removes the tail node from the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @return Error code indicating the success of the operation.
+ */
+int ListRemoveTail(List* this)
 {
     if (this == NULL || this->head == NULL)
     {
         return -1;
     }
 
-    Node *currentNode = this->head;
-    Node *previousNode = NULL;
+    Node* currentNode = this->head;
+    Node* previousNode = NULL;
 
     while (currentNode->next != NULL)
     {
@@ -341,16 +419,23 @@ int ListRemoveTail(List *this)
     return 0;
 }
 
-int ListRemove(List *this, void *refData)
+/**
+ * @brief Removes the first node containing the reference data from the linked list.
+ *
+ * @param List pointer to the linked list.
+ * @param Void pointer to the reference data.
+ * @return Error code indicating the success of the operation.
+ */
+int ListRemove(List* this, void* refData)
 {
     if (this == NULL || this->head == NULL || refData == NULL)
     {
         return -1;
     }
 
-    Node *currentNode = this->head;
-    Node *previousNode = NULL;
-    Node *temp = NULL;
+    Node* currentNode = this->head;
+    Node* previousNode = NULL;
+    Node* temp = NULL;
 
     while (currentNode != NULL && memcmp(currentNode->data, refData, this->dataSize) != 0)
     {
@@ -362,8 +447,8 @@ int ListRemove(List *this, void *refData)
     {
         return -1;
     }
-    
-    if (previousNode->next == this->lastAccessed)
+
+    if (currentNode == this->lastAccessed)
     {
         this->lastAccessed = NULL;
     }
@@ -383,13 +468,19 @@ int ListRemove(List *this, void *refData)
 
     if (temp != NULL)
     {
-        temp->previous = previousNode;
+        temp->prev = previousNode;
     }
 
     return 0;
 }
 
-int ListClear(List *this)
+/**
+ * @brief Clears all nodes and associated memory from the linked list, leaving an empty list.
+ *
+ * @param List pointer to the linked list.
+ * @return Error code indicating the success of the operation.
+ */
+int ListClear(List* this)
 {
     if (this == NULL)
     {
